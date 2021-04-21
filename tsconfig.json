@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "lib": ["dom", "es2018"],
-    "target": "es2018",
-    "module": "commonjs",
+    "lib": ["dom", "dom.iterable", "esnext", "webworker"],
+    "target": "es2019",
+    "module": "esnext",
     "outDir": "dist",
     "rootDir": ".",
     "moduleResolution": "node",
@@ -13,5 +13,6 @@
     "sourceMap": true,
     "jsx": "react"
   },
-  "include": ["*.ts", "example.tsx"]
+  "include": ["*.ts", "example.tsx"],
+  "exclude": ["node_modules"]
 }
