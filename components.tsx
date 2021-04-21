@@ -307,3 +307,104 @@ export const OFChannel: React.FunctionComponent<Props> = ( (props) => {
     );
 
 })
+
+export const OFBus: React.FunctionComponent<Props> = ( (props) => {
+    const [isBusReady, setIsBusReady] = React.useState(false);
+    const mpsRef = React.useRef<number>(200);
+    const [mps, setMps] = React.useState<number>(200);
+    const [buttonText, setButtonText] = React.useState('Start');
+    const [totalCount, setTotalCount] = React.useState(0);
+    const metricsRef = React.useRef<Metrics>(defaultMetrics);
+    const messageIdRef = React.useRef<number>(-1);
+    const messageTimerRef = React.useRef<ReturnType<typeof setInterval>>(null);
+    const updUITimerRef = React.useRef<ReturnType<typeof setInterval>>(null);
+    const messageRef = React.useRef({ id: 0, payload: randomString.generate(MessageSize)});
+    const isSubscriberRef = React.useRef<boolean>(false);
+
+    React.useEffect(() => {
+        setupUpdateTimer();
+    }, []);
+
+    const onChannelMessage = (m: any) => {
+        messageIdRef.current = m.id;
+        if (messageIdRef.current === 1) {
+            metricsRef.current.count = 0;
+            metricsRef.current.start = 0;
+            metricsRef.current.lastMps = 0;
+        }
+        metricsRef.current.count++;
+        const now = Date.now();
+        if (metricsRef.current.start === 0) {
+            metricsRef.current.start = now;
+        } 
+        else if ((now - metricsRef.current.start) >= 1000) {
+            metricsRef.current.lastMps = metricsRef.current.count;
+            metricsRef.current.count = 0;
+            metricsRef.current.start = now;
+        } 
+    };
+    const onMPSChange = (value:string) => {
+        setMps(parseInt(value))
+        mpsRef.current = parseInt(value);
+    };
+    const toggleSend = () => {
+        if (messageTimerRef.current) {
+            clearInterval(messageTimerRef.current);
+            messageTimerRef.current = undefined;
+            setButtonText('Start');
+        } 
+        else {
+            generateMessages();
+        }
+    }
+    const generateMessages = () => {
+        messageIdRef.current = 0;
+        if (!messageTimerRef.current) {
+            console.log('start at MPS', mpsRef.current);
+            messageTimerRef.current = setInterval(spam, 1000);
+            setButtonText('Stop');
+        }
+    }
+    const spam = () => {
+        for (let i = 0; i < mpsRef.current; i++) {
+            messageRef.current.id = ++messageIdRef.current;
+            fin.InterApplicationBus.publish(props.name, messageRef.current);
+        }
+    }
+    const setupUpdateTimer = () => {
+        if (!updUITimerRef.current) {
+            updUITimerRef.current = setInterval(() => {
+                if (messageIdRef.current > 0) {
+                    setTotalCount(messageIdRef.current);
+                    if (isSubscriberRef.current) {
+                        setMps(metricsRef.current.lastMps);
+                    }
+                }
+            }, infoUpdateFreq);
+        }
+    }
+    const createSubscriber = async () => {
+        await fin.InterApplicationBus.subscribe({uuid: '*'}, props.name, onChannelMessage);
+        isSubscriberRef.current = true;
+        setIsBusReady(true);
+    }
+    const createPublisher = async () => {
+        setIsBusReady(true);
+    }
+
+    return (
+      <div> 
+        <div>
+            <Button raised onClick={createSubscriber} disabled={isBusReady}>Subsriber</Button>
+            <Button raised onClick={createPublisher} disabled={isBusReady}>Publisher</Button>
+            <br></br>
+            <TextField label="MPS" onChange={ (ev) => onMPSChange((ev.target as HTMLInputElement).value) } value={ mps} />
+            <Button raised onClick={toggleSend}>{buttonText}</Button>
+        </div>
+        <div>
+            <span>Total count:</span><span style={{margin: "0 0 0 10px"}}>{totalCount}</span>
+        </div>
+      </div>
+    );
+
+})

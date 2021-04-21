@@ -13,7 +13,7 @@ const appJson = {
       defaultCentered: true,
       resizable: true,
       saveWindowState: false,
-      defaultHeight: 610,
+      defaultHeight: 630,
       defaultWidth: 500,
       backgroundThrottling: true,
     },

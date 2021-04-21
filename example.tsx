@@ -2,7 +2,7 @@ import { Configuration, WebRTCSignaling } from 'openfin-webrtc-client';
 import queryString from 'query-string';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { Channel, OFChannel } from './components';
+import { Channel, OFChannel, OFBus } from './components';
 
 // @ts-ignore
 let blpClient:any;
@@ -36,6 +36,11 @@ function setupChannelUI(webRTCClient: WebRTCSignaling ) {
     ReactDOM.render(
         <OFChannel name='OFChannel' />,
         document.getElementById('ofchannel')
+    );
+
+    ReactDOM.render(
+        <OFBus name='OFBus' />,
+        document.getElementById('ofbus')
     );
 
 }
