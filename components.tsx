@@ -1,6 +1,7 @@
 /// <reference path="./node_modules/openfin-adapter/fin.d.ts" />
 import * as React from 'react';
-import { WebRTCSignaling, SignalingEvent } from 'openfin-webrtc-client';
+//import { WebRTCSignaling, SignalingEvent } from 'openfin-webrtc-client';
+import { LocalWebRTC, SignalingEvent } from './local-webrtc';
 import * as randomString from "randomstring";
 
 //import { ThemeProvider } from '@rmwc/theme';
@@ -21,7 +22,7 @@ const infoUpdateFreq = 1000;
 
 interface Props {
     name: string;
-    webRTCClient?:WebRTCSignaling;
+    webRTCClient?:LocalWebRTC;
 }
 
 type Metrics = {

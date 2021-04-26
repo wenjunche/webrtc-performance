@@ -1,5 +1,5 @@
-import { Configuration, WebRTCSignaling } from 'openfin-webrtc-client';
-import queryString from 'query-string';
+//import { Configuration, WebRTCSignaling } from 'openfin-webrtc-client';
+import { Configuration, LocalWebRTC } from './local-webrtc';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { Channel, OFChannel, OFBus } from './components';
@@ -8,25 +8,28 @@ import { Channel, OFChannel, OFBus } from './components';
 let blpClient:any;
 
 const configuration: Configuration = {
-    signalingBaseUrl: 'https://webrtc-signaling-dev.openfin.co',
+//    signalingBaseUrl: 'https://webrtc-signaling-dev.openfin.co',
     pairingCode: 'fastBus',
     debug: false
 };
 
+// window.addEventListener("DOMContentLoadedxx",  async () => {
+//     const webRTCClient:WebRTCSignaling = new WebRTCSignaling(configuration);    
+//     await webRTCClient.init();
+
+//     setupChannelUI(webRTCClient);
+
+// });
+
 window.addEventListener("DOMContentLoaded",  async () => {
-    const webRTCClient:WebRTCSignaling = new WebRTCSignaling(configuration);    
-    await webRTCClient.init();
+    const localWebRTC: LocalWebRTC = new LocalWebRTC(configuration);    
+    await localWebRTC.init();
 
-    const parsed = queryString.parse(location.search);
-    if (parsed.blp === 'true') {
-        await blpClientInit();
-    }
-
-    setupChannelUI(webRTCClient);
+    setupChannelUI(localWebRTC);
 
 });
 
-function setupChannelUI(webRTCClient: WebRTCSignaling ) {
+function setupChannelUI(webRTCClient: LocalWebRTC ) {
 
     ReactDOM.render(
         <Channel name='channel1' webRTCClient={webRTCClient} />,
@@ -45,13 +48,3 @@ function setupChannelUI(webRTCClient: WebRTCSignaling ) {
 
 }
 
-async function blpClientInit()  {
-    console.log('initializing blpApi client');
-    try {
-    // window.blpApi is set in index.html
-    // @ts-ignore
-        blpClient = await window.blpApi.getClient();        
-    } catch (err) {
-        console.error(err);
-    }
-}
