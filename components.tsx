@@ -1,8 +1,11 @@
 /// <reference path="./node_modules/openfin-adapter/fin.d.ts" />
 import * as React from 'react';
+import { Dispatch } from "redux";
+import { useSelector, useDispatch } from "react-redux"
 //import { WebRTCSignaling, SignalingEvent } from 'openfin-webrtc-client';
 import { LocalWebRTC, SignalingEvent } from './local-webrtc';
 import * as randomString from "randomstring";
+import { ConfigAction, PerformanceConfig } from './store';
 
 //import { ThemeProvider } from '@rmwc/theme';
 import '@rmwc/theme/styles';
@@ -17,7 +20,6 @@ import type ChannelClient   from 'openfin-adapter/src/api/interappbus/channel/cl
 import type ChannelProvider from 'openfin-adapter/src/api/interappbus/channel/provider';
 
 const kMaxQueuedSendDataBytes: number = 16 * 1024 * 1024;   // defined in chromium
-const MessageSize = 1024;
 const infoUpdateFreq = 1000;
 
 interface Props {
@@ -34,6 +36,26 @@ type Metrics = {
 const defaultMetrics: Metrics = { start: 0, count: 0, total: 0, lastMps: 0};
 let initiator:boolean = false;
 
+export const MessageConfig: React.FunctionComponent<Props> = ( (props) => {
+    const [msize, setMSize] = React.useState<number>(1024);
+    const dispatch: Dispatch<ConfigAction> = useDispatch();
+
+    const onSizeChange = (value:string) => {
+        const size = parseInt(value);
+        setMSize(size);
+        dispatch({ type: 'SET_MESSAGE_SIZE', data: { message: { size }}})
+    }
+
+    return (
+        <div> 
+          <div>
+              <TextField label="Message Size" onChange={ (ev) => onSizeChange((ev.target as HTMLInputElement).value) } value={ msize} />
+          </div>
+        </div>
+      );
+  
+})
+
 export const Channel: React.FunctionComponent<Props> = ( (props) => {
     const [isWebRTCReady, setIsWebRTCReady] = React.useState(false);
     const mpsRef = React.useRef<number>(200);
@@ -45,8 +67,15 @@ export const Channel: React.FunctionComponent<Props> = ( (props) => {
     const messageIdRef = React.useRef<number>(-1);
     const messageTimerRef = React.useRef<ReturnType<typeof setInterval>>(null);
     const updUITimerRef = React.useRef<ReturnType<typeof setInterval>>(null);
-    const messageRef = React.useRef({ id: 0, payload: randomString.generate(MessageSize)});
+    const messageSize = React.useRef<number>(1024);
+    const onConfigChange = (state: PerformanceConfig):number => {
+        messageSize.current = state.message.size;
+        return state.message.size;
+    };
+    useSelector<PerformanceConfig>(onConfigChange);
+    const messageRef = React.useRef({ id: 0, payload: randomString.generate(messageSize.current)});
     const [infoText, setInfoText] = React.useState('');
+
         
     React.useEffect(() => {
         props.webRTCClient.on('webrtc', (data: SignalingEvent) => {
@@ -145,14 +174,15 @@ export const Channel: React.FunctionComponent<Props> = ( (props) => {
     }
     const generateMessages = () => {
         messageIdRef.current = 0;
+        messageRef.current = { id: 0, payload: randomString.generate(messageSize.current)};  // in case size is updated
         if (!messageTimerRef.current) {
-            console.log('start at MPS', mpsRef.current);
+            console.log('start at MPS', mpsRef.current, 'with message size', messageSize.current);
             messageTimerRef.current = setInterval(spam, 1000);
             setButtonText('Stop');
         }
     }
     const spam = () => {
-        const threshold = kMaxQueuedSendDataBytes - (2 * MessageSize);
+        const threshold = kMaxQueuedSendDataBytes - (2 * messageSize.current);
         for (let i = 0; i < mpsRef.current; i++) {
             messageRef.current.id = ++messageIdRef.current;
             dataChannelRef.current.send(JSON.stringify(messageRef.current));
@@ -207,7 +237,13 @@ export const OFChannel: React.FunctionComponent<Props> = ( (props) => {
     const messageIdRef = React.useRef<number>(-1);
     const messageTimerRef = React.useRef<ReturnType<typeof setInterval>>(null);
     const updUITimerRef = React.useRef<ReturnType<typeof setInterval>>(null);
-    const messageRef = React.useRef({ id: 0, payload: randomString.generate(MessageSize)});
+    const messageSize = React.useRef<number>(1024);
+    const onConfigChange = (state: PerformanceConfig):number => {
+        messageSize.current = state.message.size;
+        return state.message.size;
+    };
+    useSelector<PerformanceConfig>(onConfigChange);
+    const messageRef = React.useRef({ id: 0, payload: randomString.generate(messageSize.current)});
 
     React.useEffect(() => {
         setupUpdateTimer();
@@ -247,8 +283,9 @@ export const OFChannel: React.FunctionComponent<Props> = ( (props) => {
     }
     const generateMessages = () => {
         messageIdRef.current = 0;
+        messageRef.current = { id: 0, payload: randomString.generate(messageSize.current)};  // in case size is updated
         if (!messageTimerRef.current) {
-            console.log('start at MPS', mpsRef.current);
+            console.log('start at MPS', mpsRef.current, 'with message size', messageSize.current);
             messageTimerRef.current = setInterval(spam, 1000);
             setButtonText('Stop');
         }
@@ -319,8 +356,14 @@ export const OFBus: React.FunctionComponent<Props> = ( (props) => {
     const messageIdRef = React.useRef<number>(-1);
     const messageTimerRef = React.useRef<ReturnType<typeof setInterval>>(null);
     const updUITimerRef = React.useRef<ReturnType<typeof setInterval>>(null);
-    const messageRef = React.useRef({ id: 0, payload: randomString.generate(MessageSize)});
     const isSubscriberRef = React.useRef<boolean>(false);
+    const messageSize = React.useRef<number>(1024);
+    const onConfigChange = (state: PerformanceConfig):number => {
+        messageSize.current = state.message.size;
+        return state.message.size;
+    };
+    useSelector<PerformanceConfig>(onConfigChange);
+    const messageRef = React.useRef({ id: 0, payload: randomString.generate(messageSize.current)});
 
     React.useEffect(() => {
         setupUpdateTimer();
@@ -360,8 +403,9 @@ export const OFBus: React.FunctionComponent<Props> = ( (props) => {
     }
     const generateMessages = () => {
         messageIdRef.current = 0;
+        messageRef.current = { id: 0, payload: randomString.generate(messageSize.current)};  // in case size is updated
         if (!messageTimerRef.current) {
-            console.log('start at MPS', mpsRef.current);
+            console.log('start at MPS', mpsRef.current, 'with message size', messageSize.current);
             messageTimerRef.current = setInterval(spam, 1000);
             setButtonText('Stop');
         }

@@ -2,10 +2,9 @@
 import { Configuration, LocalWebRTC } from './local-webrtc';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { Channel, OFChannel, OFBus } from './components';
-
-// @ts-ignore
-let blpClient:any;
+import { Provider } from 'react-redux';
+import { MessageConfig, Channel, OFChannel, OFBus } from './components';
+import { store } from './store';
 
 const configuration: Configuration = {
 //    signalingBaseUrl: 'https://webrtc-signaling-dev.openfin.co',
@@ -32,17 +31,30 @@ window.addEventListener("DOMContentLoaded",  async () => {
 function setupChannelUI(webRTCClient: LocalWebRTC ) {
 
     ReactDOM.render(
-        <Channel name='channel1' webRTCClient={webRTCClient} />,
+        <Provider store={store}>
+            <MessageConfig name='config'/>
+        </Provider>,
+        document.getElementById('perfConfig')
+    );
+
+    ReactDOM.render(
+        <Provider store={store}>
+            <Channel name='channel1' webRTCClient={webRTCClient} />
+        </Provider>,
         document.getElementById('channel1')
     );
 
     ReactDOM.render(
-        <OFChannel name='OFChannel' />,
+        <Provider store={store}>
+            <OFChannel name='OFChannel' />
+        </Provider>,
         document.getElementById('ofchannel')
     );
 
     ReactDOM.render(
-        <OFBus name='OFBus' />,
+        <Provider store={store}>
+            <OFBus name='OFBus' />
+        </Provider>,
         document.getElementById('ofbus')
     );
 
