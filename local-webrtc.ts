@@ -41,7 +41,7 @@ export class LocalWebRTC extends EventEmitter {
         super();
         this.configuration = configuration;
         this.defaultChannelName = `${this.configuration.pairingCode}:default`;
-        this.channelName = `webrtc:${this.configuration.pairingCode}:offer:anwser`;
+        this.channelName = `webrtc:${this.configuration.pairingCode}:offer:answer`;
         this.channelMap = new Map();
     }
 
@@ -83,7 +83,7 @@ export class LocalWebRTC extends EventEmitter {
     }
 
     private onClientConnect(identity: Identity, payload: any) {
-        console.log(`Channel client connected ${identity}`);
+        console.log(`Channel client connected ${JSON.stringify(identity)}`);
         if (this.channelClientId) {
             console.error(`Channel client already connected ${identity}`);
             throw new Error('Connection Rejected');

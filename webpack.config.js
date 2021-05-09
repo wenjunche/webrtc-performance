@@ -18,8 +18,9 @@ const appJson = {
       backgroundThrottling: true,
     },
     runtime: {
-      arguments: " --disable-features=CookiesWithoutSameSiteMustSecure,SameSiteByDefaultCookies ",
-      version: "stable",
+        arguments: " --disable-features=CookiesWithoutSameSiteMustSecure,SameSiteByDefaultCookies --enable-mesh ",
+        argumentsrr: " --disable-features=CookiesWithoutSameSiteMustSecure,SameSiteByDefaultCookies --enable-mesh --security-realm=${realm}",
+        version: "stable",
     },
   };
 
@@ -74,6 +75,7 @@ module.exports = {
                 const json = JSON.parse(JSON.stringify(appJson));
                 json.startup_app.uuid = uuidv4();
                 json.startup_app.url = appUrl;
+                json.runtime.arguments = json.runtime.arguments.replace('${realm}', json.startup_app.uuid);
                 res.status(200).json(json);
             })
         }

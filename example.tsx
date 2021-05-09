@@ -39,14 +39,14 @@ function setupChannelUI(webRTCClient: LocalWebRTC ) {
 
     ReactDOM.render(
         <Provider store={store}>
-            <Channel name='channel1' webRTCClient={webRTCClient} />
+            <Channel name='WebRTCPerfChannel' webRTCClient={webRTCClient} />
         </Provider>,
         document.getElementById('channel1')
     );
 
     ReactDOM.render(
         <Provider store={store}>
-            <OFChannel name='OFChannel' />
+            <OFChannel name='OFPerfChannel' />
         </Provider>,
         document.getElementById('ofchannel')
     );
