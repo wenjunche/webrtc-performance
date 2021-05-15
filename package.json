@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "openfin-adapter": "^19.59.24",
-    "openfin-webrtc-client": "1.0.3",
+    "openfin-webrtc-client": "1.0.4",
     "query-string": "^6.13.6",
     "randomstring": "^1.1.5",
     "react-redux": "^7.2.4",
